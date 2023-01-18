@@ -1,0 +1,36 @@
+# archiov de configuracion para travis ci yml
+language: node_js # indicar cual lenguaje se va utilizar para el proyecto. Aquí se indica el lenguaje o el runtime o framework que 
+# vaya a usar
+# indicar luego la version de Nodes que se va usar
+node_js:
+  - "8" # indicar al menos que se debe usar la version de nodejs version 8
+dist: trusty # se puede indicar el sistema operativo que se va usar en la maquina virtual
+# indicar los servicios que va usar el sistema operativo para correr la aplicacion. Por ejemplo mongodb, redis.
+services: 
+  - mongodb
+  - redis-server
+# configurar las variables de entorno del servidor virtual
+env:
+  - NODE_ENV=ci PORT=3000 # de esta forma setea el valor de una variable de entorno para que desde nodejs, pueda leer ese valor y usar un especifico archivo 
+  # de variables de configuracion
+  # - PORT=3000 # reasignar puerto de salida a express
+cache: 
+  directories: # especificar una lista de directorios para guardarlos en cache
+    - node_modules
+    - client/node_modules
+# se pueden cachear carpetas de la aplicacion para no tener que instalar nuevamente dependencias, y solo usar
+# lo que esta en canche para que el proceso de configuracion sea rapido
+# por ejemplo, siempre se va ejecutar el npm install en el servidor virtual, pero su hay una instancia de los node_modules en canche, usara esa carpeta
+# siempre y cuando las dependiencias no hayan cambiado. De lo contrario instalara nuevamente las dependencias y sobreescribirá en cache el nuevo node_modules
+
+install: # en esta seccion se asignan los comandos que deben correr por terminal como el npm install
+  - npm install # correra el comando para instalar las dependencias de nodejs en una terminal vortual dentro de el servidor virtual
+  - npm run build # generar la distribucion minificada del proyecto de react
+script: # en esta seccion se van a ejecutar comandos para ejecutar el proyecto, correr las pruebas, etc
+  - nohup npm run start &
+  - sleep 3 # dar un tiempo de espera para que el servidor de la aplicación pueda levantar
+  - npm run test # luego de que el servidor de la aplicación se esta ejecutando, ejecutar las pruebas
+  # al agregar el simbolo &, le indica al servidor que ejecute el servidor en segundo plano.
+  # De forma que la terminal no queda bloqueada para poder seguir ejecutando comandos.
+  # nohup es un comando que le indica al servidor que al ejecutar el proceso de inciar el servidor, no importa si la
+  # terminal se cierra o no. Se va seguir ejecutando y junto con &, se jecutara en segundo plano
